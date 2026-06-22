@@ -1,0 +1,32 @@
+# Streamlit secrets and local environment
+.streamlit/secrets.toml
+.env
+.env.*
+
+# Python caches and build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local editor and Codex metadata
+.vscode/
+.idea/
+.codex/
+.agents/
+
+# Sensitive key files
+*.pem
+*.key
+*.crt
