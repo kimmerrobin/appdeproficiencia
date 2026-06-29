@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from psycopg2.extras import RealDictCursor
 
 from database.conexao import conectar
@@ -27,9 +29,10 @@ def salvar_analise(
                         adjetivos,
                         adverbios,
                         conectores,
-                        feedback
+                        feedback,
+                        data_analise
                     )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """,
                     (
@@ -41,6 +44,7 @@ def salvar_analise(
                         adverbios,
                         conectores,
                         feedback,
+                        datetime.now(timezone.utc),
                     ),
                 )
                 return cursor.fetchone()["id"]

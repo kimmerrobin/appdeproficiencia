@@ -1,3 +1,6 @@
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 import streamlit as st
 
 from controllers.analisador_controller import (
@@ -6,6 +9,27 @@ from controllers.analisador_controller import (
     processar_e_salvar_texto,
 )
 from controllers.cadastro_controller import cadastrar_aluno, deletar_aluno, listar_alunos
+
+
+FUSO_LOCAL = ZoneInfo("America/Fortaleza")
+FUSO_UTC = ZoneInfo("UTC")
+
+
+def formatar_data_hora_brasil(valor):
+    if valor is None:
+        return "data nao informada"
+
+    if isinstance(valor, str):
+        valor = valor.replace("Z", "+00:00")
+        data = datetime.fromisoformat(valor)
+    else:
+        data = valor
+
+    if data.tzinfo is None:
+        data = data.replace(tzinfo=FUSO_UTC)
+
+    data_local = data.astimezone(FUSO_LOCAL)
+    return data_local.strftime("%d/%m/%Y às %H:%M")
 
 
 def atualizar_interface():
@@ -60,9 +84,10 @@ def exibir_historico(aluno_id):
         return
 
     for numero_analise, item in enumerate(historico, start=1):
-        titulo = f"Análise {numero_analise} - {item['data_analise']}"
+        data_formatada = formatar_data_hora_brasil(item["data_analise"])
+        titulo = f"Análise {numero_analise} - {data_formatada}"
         with st.expander(titulo):
-            st.write(f"**Data da análise:** {item['data_analise']}")
+            st.write(f"**Data da análise:** {data_formatada}")
             st.write(f"**Total de palavras:** {item['total_palavras']}")
             st.write(f"**Substantivos:** {item['substantivos']}")
             st.write(f"**Verbos:** {item['verbos']}")
