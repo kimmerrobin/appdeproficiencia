@@ -73,24 +73,25 @@ def exibir_historico(aluno_id):
                 st.write("**Feedback:**")
                 st.write(item["feedback"])
 
-            chave_confirmacao = f"confirm_delete_analise_{item['id']}"
+            analise_id = item["id"]
+            chave_confirmacao = f"confirmar_exclusao_analise_{analise_id}"
 
             if st.button(
                 "Excluir análise",
-                key=f"delete_analise_{item['id']}",
+                key=f"btn_excluir_analise_{analise_id}",
             ):
                 st.session_state[chave_confirmacao] = True
 
-            if st.session_state.get(chave_confirmacao):
+            if st.session_state.get(chave_confirmacao, False):
                 st.warning("Tem certeza que deseja excluir esta análise?")
                 coluna_confirmar, coluna_cancelar = st.columns(2)
 
                 with coluna_confirmar:
                     if st.button(
                         "Confirmar exclusão",
-                        key=f"confirm_delete_analise_{item['id']}",
+                        key=f"btn_confirmar_exclusao_analise_{analise_id}",
                     ):
-                        deletar_analise(item["id"])
+                        deletar_analise(analise_id)
                         limpar_confirmacao(chave_confirmacao)
                         st.success("Análise excluída com sucesso.")
                         atualizar_interface()
@@ -98,7 +99,7 @@ def exibir_historico(aluno_id):
                 with coluna_cancelar:
                     if st.button(
                         "Cancelar",
-                        key=f"cancel_delete_analise_{item['id']}",
+                        key=f"btn_cancelar_exclusao_analise_{analise_id}",
                     ):
                         limpar_confirmacao(chave_confirmacao)
                         atualizar_interface()
@@ -146,15 +147,16 @@ def executar_interface():
                             continue
                         st.write(f"**{chave}:** {valor}")
 
-                    chave_confirmacao = f"confirm_delete_aluno_{aluno.id_aluno}"
+                    aluno_id = aluno.id_aluno
+                    chave_confirmacao = f"confirmar_exclusao_aluno_{aluno_id}"
 
                     if st.button(
                         "Excluir aluno",
-                        key=f"delete_aluno_{aluno.id_aluno}",
+                        key=f"btn_excluir_aluno_{aluno_id}",
                     ):
                         st.session_state[chave_confirmacao] = True
 
-                    if st.session_state.get(chave_confirmacao):
+                    if st.session_state.get(chave_confirmacao, False):
                         st.warning(
                             "Tem certeza que deseja excluir este aluno e suas análises?"
                         )
@@ -163,9 +165,9 @@ def executar_interface():
                         with coluna_confirmar:
                             if st.button(
                                 "Confirmar exclusão",
-                                key=f"confirm_delete_aluno_{aluno.id_aluno}",
+                                key=f"btn_confirmar_exclusao_aluno_{aluno_id}",
                             ):
-                                deletar_aluno(aluno.id_aluno)
+                                deletar_aluno(aluno_id)
                                 limpar_confirmacao(chave_confirmacao)
                                 st.success("Aluno excluído com sucesso.")
                                 atualizar_interface()
@@ -173,7 +175,7 @@ def executar_interface():
                         with coluna_cancelar:
                             if st.button(
                                 "Cancelar",
-                                key=f"cancel_delete_aluno_{aluno.id_aluno}",
+                                key=f"btn_cancelar_exclusao_aluno_{aluno_id}",
                             ):
                                 limpar_confirmacao(chave_confirmacao)
                                 atualizar_interface()
