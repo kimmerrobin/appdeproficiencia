@@ -72,7 +72,7 @@ def listar_analises_por_aluno(aluno_id):
                 INNER JOIN transcricoes
                     ON transcricoes.id = analises.transcricao_id
                 WHERE transcricoes.aluno_id = %s
-                ORDER BY analises.data_analise DESC, analises.id DESC
+                ORDER BY analises.data_analise ASC, analises.id ASC
                 """,
                 (aluno_id,),
             )
@@ -112,5 +112,22 @@ def buscar_ultima_analise_por_aluno(aluno_id):
             )
             analise = cursor.fetchone()
             return dict(analise) if analise else None
+    finally:
+        conexao.close()
+
+
+def deletar_analise(analise_id):
+    conexao = conectar()
+    try:
+        with conexao:
+            with conexao.cursor() as cursor:
+                cursor.execute(
+                    """
+                    DELETE FROM analises
+                    WHERE id = %s
+                    """,
+                    (analise_id,),
+                )
+                return cursor.rowcount > 0
     finally:
         conexao.close()

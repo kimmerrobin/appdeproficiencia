@@ -45,3 +45,7 @@ def processar_e_salvar_texto(aluno_id: int, texto: str):
 
 def listar_historico_por_aluno(aluno_id: int):
     return analise_repository.listar_analises_por_aluno(aluno_id)
+
+
+def deletar_analise(analise_id: int):
+    return analise_repository.deletar_analise(analise_id)

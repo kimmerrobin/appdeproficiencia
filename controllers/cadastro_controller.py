@@ -54,3 +54,7 @@ def buscar_aluno_por_nome(nome: str):
         if aluno.nome.lower() == nome.lower():
             return aluno
     return None
+
+
+def deletar_aluno(aluno_id: int):
+    return aluno_repository.deletar_aluno(aluno_id)

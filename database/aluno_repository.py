@@ -53,3 +53,20 @@ def buscar_aluno_por_id(aluno_id):
             return dict(aluno) if aluno else None
     finally:
         conexao.close()
+
+
+def deletar_aluno(aluno_id):
+    conexao = conectar()
+    try:
+        with conexao:
+            with conexao.cursor() as cursor:
+                cursor.execute(
+                    """
+                    DELETE FROM alunos
+                    WHERE id = %s
+                    """,
+                    (aluno_id,),
+                )
+                return cursor.rowcount > 0
+    finally:
+        conexao.close()

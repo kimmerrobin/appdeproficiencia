@@ -1,10 +1,23 @@
 import streamlit as st
 
 from controllers.analisador_controller import (
+    deletar_analise,
     listar_historico_por_aluno,
     processar_e_salvar_texto,
 )
-from controllers.cadastro_controller import cadastrar_aluno, listar_alunos
+from controllers.cadastro_controller import cadastrar_aluno, deletar_aluno, listar_alunos
+
+
+def atualizar_interface():
+    if hasattr(st, "rerun"):
+        st.rerun()
+    else:
+        st.experimental_rerun()
+
+
+def limpar_confirmacao(chave):
+    if chave in st.session_state:
+        del st.session_state[chave]
 
 
 def exibir_analise(analise):
@@ -46,8 +59,8 @@ def exibir_historico(aluno_id):
         st.write("Este aluno ainda não possui análises salvas.")
         return
 
-    for item in historico:
-        titulo = f"Análise {item['id']} - {item['data_analise']}"
+    for numero_analise, item in enumerate(historico, start=1):
+        titulo = f"Análise {numero_analise} - {item['data_analise']}"
         with st.expander(titulo):
             st.write(f"**Data da análise:** {item['data_analise']}")
             st.write(f"**Total de palavras:** {item['total_palavras']}")
@@ -59,6 +72,36 @@ def exibir_historico(aluno_id):
             if item["feedback"]:
                 st.write("**Feedback:**")
                 st.write(item["feedback"])
+
+            chave_confirmacao = f"confirm_delete_analise_{item['id']}"
+
+            if st.button(
+                "Excluir análise",
+                key=f"delete_analise_{item['id']}",
+            ):
+                st.session_state[chave_confirmacao] = True
+
+            if st.session_state.get(chave_confirmacao):
+                st.warning("Tem certeza que deseja excluir esta análise?")
+                coluna_confirmar, coluna_cancelar = st.columns(2)
+
+                with coluna_confirmar:
+                    if st.button(
+                        "Confirmar exclusão",
+                        key=f"confirm_delete_analise_{item['id']}",
+                    ):
+                        deletar_analise(item["id"])
+                        limpar_confirmacao(chave_confirmacao)
+                        st.success("Análise excluída com sucesso.")
+                        atualizar_interface()
+
+                with coluna_cancelar:
+                    if st.button(
+                        "Cancelar",
+                        key=f"cancel_delete_analise_{item['id']}",
+                    ):
+                        limpar_confirmacao(chave_confirmacao)
+                        atualizar_interface()
 
 
 def executar_interface():
@@ -96,10 +139,44 @@ def executar_interface():
 
         if alunos:
             for aluno in alunos:
-                with st.expander(f"{aluno.id_aluno} - {aluno.nome} ({aluno.nivel_atual})"):
+                with st.expander(f"{aluno.nome} ({aluno.nivel_atual})"):
                     ficha = aluno.exibir_ficha()
                     for chave, valor in ficha.items():
+                        if chave == "ID":
+                            continue
                         st.write(f"**{chave}:** {valor}")
+
+                    chave_confirmacao = f"confirm_delete_aluno_{aluno.id_aluno}"
+
+                    if st.button(
+                        "Excluir aluno",
+                        key=f"delete_aluno_{aluno.id_aluno}",
+                    ):
+                        st.session_state[chave_confirmacao] = True
+
+                    if st.session_state.get(chave_confirmacao):
+                        st.warning(
+                            "Tem certeza que deseja excluir este aluno e suas análises?"
+                        )
+                        coluna_confirmar, coluna_cancelar = st.columns(2)
+
+                        with coluna_confirmar:
+                            if st.button(
+                                "Confirmar exclusão",
+                                key=f"confirm_delete_aluno_{aluno.id_aluno}",
+                            ):
+                                deletar_aluno(aluno.id_aluno)
+                                limpar_confirmacao(chave_confirmacao)
+                                st.success("Aluno excluído com sucesso.")
+                                atualizar_interface()
+
+                        with coluna_cancelar:
+                            if st.button(
+                                "Cancelar",
+                                key=f"cancel_delete_aluno_{aluno.id_aluno}",
+                            ):
+                                limpar_confirmacao(chave_confirmacao)
+                                atualizar_interface()
         else:
             st.write("Nenhum aluno cadastrado ainda.")
 
@@ -109,13 +186,10 @@ def executar_interface():
         alunos = listar_alunos()
 
         if alunos:
-            nomes_alunos = [aluno.nome for aluno in alunos]
-
-            nome_escolhido = st.selectbox("Escolha o aluno:", nomes_alunos)
-
-            aluno_selecionado = next(
-                aluno for aluno in alunos
-                if aluno.nome == nome_escolhido
+            aluno_selecionado = st.selectbox(
+                "Escolha o aluno:",
+                alunos,
+                format_func=lambda aluno: aluno.nome,
             )
 
             st.write(f"Nivel atual: {aluno_selecionado.nivel_atual}")
@@ -126,12 +200,12 @@ def executar_interface():
                 if texto.strip() == "":
                     st.warning("Digite uma transcricao antes de analisar.")
                 else:
-                    analise, transcricao_id = processar_e_salvar_texto(
+                    analise, _transcricao_id = processar_e_salvar_texto(
                         aluno_id=aluno_selecionado.id_aluno,
                         texto=texto,
                     )
 
-                    st.success(f"Transcricao {transcricao_id} salva com sucesso.")
+                    st.success("Transcricao salva com sucesso.")
 
                     st.subheader("Dados do aluno")
                     st.write(f"Nome: {aluno_selecionado.nome}")
